@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preva — Preventive Health Assessment</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F5F0E8;
+    --warm-white: #FDFAF5;
+    --charcoal: #1C1C1E;
+    --charcoal-60: rgba(28,28,30,0.6);
+    --charcoal-20: rgba(28,28,30,0.12);
+    --sage: #4A7C59;
+    --sage-light: #E8F0EB;
+    --rose: #C4614A;
+    --rose-light: #F5EAE7;
+    --amber: #C4893A;
+    --amber-light: #F5EDE0;
+    --indigo: #3D5A8A;
+    --indigo-light: #E5EBF4;
+    --teal: #2E7D7A;
+    --teal-light: #E3F0EF;
+    --border: rgba(28,28,30,0.1);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--charcoal);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── APP SHELL ── */
+  .app { min-height: 100vh; display: flex; flex-direction: column; }
+
+  .topbar {
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: var(--warm-white);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    letter-spacing: -0.3px;
+    color: var(--charcoal);
+  }
+  .logo span { color: var(--sage); }
+
+  .progress-bar {
+    flex: 1; max-width: 320px; margin: 0 32px;
+    height: 3px; background: var(--charcoal-20);
+    border-radius: 99px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: var(--sage);
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+  .step-count { font-size: 13px; color: var(--charcoal-60); font-weight: 400; }
+
+  /* ── SCREENS ── */
+  .screen { display: none; flex: 1; }
+  .screen.active { display: flex; }
+
+  /* ── HERO SCREEN ── */
+  #screen-0 {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 24px;
+    background: var(--warm-white);
+    position: relative;
+    overflow: hidden;
+  }
+  #screen-0::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(74,124,89,0.08) 0%, transparent 70%);
+    top: -200px; right: -200px;
+  }
+  .hero-tag {
+    display: inline-block;
+    background: var(--sage-light);
+    color: var(--sage);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 99px;
+    margin-bottom: 24px;
+  }
+  .hero-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(36px, 5vw, 56px);
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+    max-width: 600px;
+    margin-bottom: 20px;
+  }
+  .hero-title em { font-style: italic; color: var(--sage); }
+  .hero-sub {
+    font-size: 17px;
+    color: var(--charcoal-60);
+    max-width: 440px;
+    margin-bottom: 40px;
+    font-weight: 300;
+  }
+  .btn-primary {
+    background: var(--charcoal);
+    color: white;
+    border: none;
+    padding: 16px 36px;
+    border-radius: 99px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.01em;
+  }
+  .btn-primary:hover { background: var(--sage); transform: translateY(-1px); }
+  .btn-primary:active { transform: scale(0.98); }
+  .hero-note { margin-top: 20px; font-size: 13px; color: var(--charcoal-60); }
+
+  /* ── QUESTION SCREENS ── */
+  .q-screen {
+    flex-direction: column;
+    max-width: 680px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+  .q-label {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--charcoal-60);
+    margin-bottom: 12px;
+  }
+  .q-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(24px, 3.5vw, 34px);
+    line-height: 1.2;
+    letter-spacing: -0.3px;
+    margin-bottom: 8px;
+  }
+  .q-sub {
+    font-size: 15px;
+    color: var(--charcoal-60);
+    margin-bottom: 36px;
+    font-weight: 300;
+  }
+
+  /* ── CHIPS ── */
+  .chip-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 36px; }
+  .chip {
+    padding: 10px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 99px;
+    background: var(--warm-white);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.18s;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--charcoal);
+    font-weight: 400;
+  }
+  .chip:hover { border-color: var(--sage); color: var(--sage); background: var(--sage-light); }
+  .chip.selected {
+    background: var(--charcoal);
+    border-color: var(--charcoal);
+    color: white;
+  }
+  .chip.selected:hover { background: var(--sage); border-color: var(--sage); }
+
+  /* ── CARD GRID ── */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-bottom: 36px; }
+  .sel-card {
+    padding: 20px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--warm-white);
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: center;
+  }
+  .sel-card:hover { border-color: var(--sage); transform: translateY(-2px); }
+  .sel-card.selected { border-color: var(--charcoal); background: var(--charcoal); color: white; }
+  .sel-card.selected .card-icon { filter: brightness(10); }
+  .card-icon { font-size: 28px; margin-bottom: 8px; display: block; }
+  .card-label { font-size: 14px; font-weight: 500; }
+  .card-sub { font-size: 12px; color: var(--charcoal-60); margin-top: 4px; }
+  .sel-card.selected .card-sub { color: rgba(255,255,255,0.7); }
+
+  /* ── SLIDER ── */
+  .slider-wrap { margin-bottom: 36px; }
+  .slider-row { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+  .slider-label { font-size: 15px; flex: 1; }
+  .slider-val {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    min-width: 48px;
+    text-align: right;
+    color: var(--sage);
+  }
+  input[type=range] {
+    width: 100%; height: 4px;
+    background: var(--charcoal-20);
+    border-radius: 99px;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    appearance: none;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--charcoal);
+    border: 3px solid var(--cream);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+
+  /* ── TEXT INPUT ── */
+  .text-input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--warm-white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--charcoal);
+    outline: none;
+    transition: border 0.2s;
+    margin-bottom: 12px;
+  }
+  .text-input:focus { border-color: var(--sage); }
+
+  /* ── SCALE ── */
+  .scale-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .scale-btn {
+    flex: 1; padding: 14px 4px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--warm-white);
+    font-size: 14px; font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--charcoal);
+    text-align: center;
+  }
+  .scale-btn:hover { border-color: var(--charcoal); }
+  .scale-btn.selected { background: var(--charcoal); border-color: var(--charcoal); color: white; }
+  .scale-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--charcoal-60); }
+
+  /* ── NAV BUTTONS ── */
+  .nav-row {
+    display: flex; gap: 12px; align-items: center;
+    margin-top: 8px;
+  }
+  .btn-back {
+    padding: 14px 24px;
+    border: 1.5px solid var(--border);
+    border-radius: 99px;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--charcoal-60);
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .btn-back:hover { border-color: var(--charcoal); color: var(--charcoal); }
+  .btn-next {
+    padding: 14px 32px;
+    border: none;
+    border-radius: 99px;
+    background: var(--charcoal);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-next:hover { background: var(--sage); transform: translateY(-1px); }
+  .btn-next:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-next:not(:disabled):active { transform: scale(0.98); }
+  .skip-link { font-size: 13px; color: var(--charcoal-60); cursor: pointer; margin-left: 8px; text-decoration: underline; }
+  .skip-link:hover { color: var(--charcoal); }
+
+  /* ── LOADING ── */
+  #screen-loading {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 24px;
+    background: var(--warm-white);
+    text-align: center;
+  }
+  .spinner {
+    width: 48px; height: 48px;
+    border: 3px solid var(--charcoal-20);
+    border-top-color: var(--sage);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-bottom: 24px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px; margin-bottom: 8px;
+  }
+  .loading-sub { font-size: 15px; color: var(--charcoal-60); font-weight: 300; }
+  .loading-steps { margin-top: 28px; display: flex; flex-direction: column; gap: 10px; max-width: 360px; width: 100%; }
+  .loading-step { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--charcoal-60); opacity: 0; transition: opacity 0.4s; }
+  .loading-step.show { opacity: 1; }
+  .loading-step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--charcoal-20); flex-shrink: 0; transition: background 0.4s; }
+  .loading-step.show .loading-step-dot { background: var(--sage); }
+
+  /* ── RESULTS ── */
+  #screen-results {
+    flex-direction: column;
+    max-width: 820px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+  .results-header { margin-bottom: 40px; }
+  .results-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--sage-light); color: var(--sage);
+    font-size: 12px; font-weight: 500;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 6px 14px; border-radius: 99px;
+    margin-bottom: 16px;
+  }
+  .results-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(28px, 4vw, 42px);
+    line-height: 1.15;
+    letter-spacing: -0.4px;
+    margin-bottom: 10px;
+  }
+  .results-sub { font-size: 16px; color: var(--charcoal-60); font-weight: 300; }
+
+  /* Score card */
+  .score-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 40px; }
+  .score-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  .score-card .sc-label { font-size: 12px; color: var(--charcoal-60); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .score-card .sc-val {
+    font-family: 'DM Serif Display', serif;
+    font-size: 36px; line-height: 1;
+    margin-bottom: 4px;
+  }
+  .score-card .sc-tag { font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 99px; display: inline-block; }
+  .tag-low { background: var(--sage-light); color: var(--sage); }
+  .tag-mod { background: var(--amber-light); color: var(--amber); }
+  .tag-high { background: var(--rose-light); color: var(--rose); }
+
+  /* Workflow */
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px; margin-bottom: 6px; margin-top: 40px;
+  }
+  .section-sub { font-size: 14px; color: var(--charcoal-60); margin-bottom: 20px; }
+
+  .workflow-timeline { position: relative; padding-left: 32px; }
+  .workflow-timeline::before {
+    content: '';
+    position: absolute;
+    left: 10px; top: 0; bottom: 0;
+    width: 1.5px;
+    background: var(--charcoal-20);
+  }
+  .wf-item {
+    position: relative;
+    margin-bottom: 20px;
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 20px 20px 20px;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: pointer;
+  }
+  .wf-item:hover { border-color: var(--sage); transform: translateX(3px); }
+  .wf-item::before {
+    content: '';
+    position: absolute;
+    left: -26px; top: 24px;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px var(--charcoal-20);
+  }
+  .wf-item.priority-high::before { background: var(--rose); box-shadow: 0 0 0 2px var(--rose); }
+  .wf-item.priority-med::before  { background: var(--amber); box-shadow: 0 0 0 2px var(--amber); }
+  .wf-item.priority-low::before  { background: var(--sage); box-shadow: 0 0 0 2px var(--sage); }
+
+  .wf-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .wf-title { font-size: 16px; font-weight: 500; }
+  .wf-badge {
+    font-size: 11px; font-weight: 500;
+    padding: 3px 10px; border-radius: 99px;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .badge-now { background: var(--rose-light); color: var(--rose); }
+  .badge-3m  { background: var(--amber-light); color: var(--amber); }
+  .badge-6m  { background: var(--indigo-light); color: var(--indigo); }
+  .badge-ann { background: var(--teal-light); color: var(--teal); }
+  .badge-life{ background: var(--sage-light); color: var(--sage); }
+  .wf-desc { font-size: 14px; color: var(--charcoal-60); margin-bottom: 12px; line-height: 1.6; }
+  .wf-biomarkers { display: flex; flex-wrap: wrap; gap: 6px; }
+  .bm-chip {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 99px;
+    background: var(--cream);
+    color: var(--charcoal-60);
+    border: 1px solid var(--border);
+  }
+
+  /* Tabs */
+  .tab-row { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .tab-btn {
+    padding: 10px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--charcoal-60);
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.18s;
+  }
+  .tab-btn.active { color: var(--charcoal); border-bottom-color: var(--charcoal); font-weight: 500; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* Biomarker panel */
+  .bm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .bm-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .bm-card-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .bm-card-reason { font-size: 13px; color: var(--charcoal-60); margin-bottom: 10px; line-height: 1.5; }
+  .bm-freq { font-size: 12px; color: var(--sage); font-weight: 500; }
+
+  /* Lifestyle panel */
+  .lifestyle-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .ls-card {
+    background: var(--warm-white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+  }
+  .ls-icon { font-size: 24px; margin-bottom: 8px; }
+  .ls-title { font-size: 14px; font-weight: 500; margin-bottom: 6px; }
+  .ls-desc { font-size: 13px; color: var(--charcoal-60); line-height: 1.55; }
+
+  /* CTA */
+  .results-cta {
+    margin-top: 48px;
+    background: var(--charcoal);
+    border-radius: var(--radius);
+    padding: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .cta-text .cta-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px; color: white; margin-bottom: 6px;
+  }
+  .cta-text .cta-sub { font-size: 14px; color: rgba(255,255,255,0.6); font-weight: 300; }
+  .btn-cta {
+    background: var(--sage);
+    color: white; border: none;
+    padding: 14px 28px; border-radius: 99px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 500;
+    cursor: pointer; white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .btn-cta:hover { background: #3d6b49; }
+  .restart-link { font-size: 13px; color: var(--charcoal-60); cursor: pointer; text-decoration: underline; margin-top: 16px; display: inline-block; }
+  .restart-link:hover { color: var(--charcoal); }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:600px){
+    .topbar { padding: 14px 16px; }
+    .progress-bar { max-width: 140px; margin: 0 12px; }
+    .q-screen { padding: 32px 16px 60px; }
+    .card-grid { grid-template-columns: repeat(2,1fr); }
+    .score-grid { grid-template-columns: repeat(2,1fr); }
+    .results-cta { flex-direction: column; }
+    #screen-results { padding: 32px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="logo">Pre<span>va</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="step-count" id="step-count"></div>
+  </header>
+
+  <!-- ── SCREEN 0: HERO ── -->
+  <div class="screen active" id="screen-0">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:60px 24px;text-align:center;position:relative;overflow:hidden;">
+      <div style="content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(74,124,89,0.08) 0%,transparent 70%);top:-200px;right:-200px;pointer-events:none;"></div>
+      <div class="hero-tag">Women's preventive health</div>
+      <h1 class="hero-title">Know your risks.<br><em>Before they know you.</em></h1>
+      <p class="hero-sub">A 5-minute assessment that maps your health profile to a personalised preventive care workflow — built on clinical biomarker science.</p>
+      <button class="btn-primary" onclick="startAssessment()">Begin my assessment →</button>
+      <p class="hero-note">Private · Takes ~5 minutes · No account needed</p>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 1: Age ── -->
+  <div class="screen" id="screen-1">
+    <div class="q-screen">
+      <div class="q-label">Step 1 of 7 — Basic profile</div>
+      <h2 class="q-title">How old are you?</h2>
+      <p class="q-sub">Age determines your baseline risk thresholds and screening schedules.</p>
+      <div class="slider-wrap">
+        <div class="slider-row">
+          <span class="slider-label">Your age</span>
+          <span class="slider-val" id="age-val">32</span>
+        </div>
+        <input type="range" min="18" max="75" value="32" id="age-slider"
+          oninput="document.getElementById('age-val').textContent=this.value; state.age=+this.value;">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--charcoal-60);margin-top:6px;">
+          <span>18</span><span>75</span>
+        </div>
+      </div>
+      <div class="q-label" style="margin-top:8px">Menopausal status</div>
+      <div class="chip-grid" id="meno-chips">
+        <div class="chip" data-group="meno" data-val="pre" onclick="selectChip(this,'meno')">Pre-menopausal</div>
+        <div class="chip" data-group="meno" data-val="peri" onclick="selectChip(this,'meno')">Peri-menopausal</div>
+        <div class="chip" data-group="meno" data-val="post" onclick="selectChip(this,'meno')">Post-menopausal</div>
+        <div class="chip" data-group="meno" data-val="unknown" onclick="selectChip(this,'meno')">Not sure</div>
+      </div>
+      <div class="nav-row">
+        <button class="btn-next" id="next-1" onclick="goTo(2)" disabled>Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 2: Conditions ── -->
+  <div class="screen" id="screen-2">
+    <div class="q-screen">
+      <div class="q-label">Step 2 of 7 — Medical history</div>
+      <h2 class="q-title">Any diagnosed conditions?</h2>
+      <p class="q-sub">Select all that apply — or skip if none. Include family history where relevant.</p>
+      <div class="card-grid" id="conditions-grid">
+        <div class="sel-card" data-val="pcos" onclick="toggleCard(this,'conditions')">
+          <span class="card-icon">🌀</span>
+          <div class="card-label">PCOS</div>
+          <div class="card-sub">Polycystic ovary syndrome</div>
+        </div>
+        <div class="sel-card" data-val="thyroid" onclick="toggleCard(this,'conditions')">
+          <span class="card-icon">🦋</span>
+          <div class="card-label">Thyroid disorder</div>
+          <div class="card-sub">Hypo / hyperthyroidism</div>
+        </div>
+        <div class="sel-card" data-val="diabetes" onclick="toggleCard(this,'conditions')">
+          <span class="card-icon">🩸</span>
+          <div class="card-label">Diabetes / prediabetes</div>
+          <div class="card-sub">Type 1 or 2</div>
+        </div>
+        <div class="sel-card" data-val="anaemia" onclick="toggleCard(this,'conditions')">
+          <span class="card-icon">💧</span>
+          <div class="card-label">Anaemia</div>
+          <div class="card-sub">Iron deficiency</div>
+        </div>
+        <div class="sel-card" data-val="hypertension" onclick="toggleCard(this,'conditions')">
+          <span class="card-icon">❤️</span>
+          <div class="card-label">Hypertension</div>
+          <div class="card-sub">High blood pressure</div>
+        </div>
+        <div class="sel-card" data-val="cancer_fh" onclick="toggleCard(this,'conditions')">
+          <span class="card-icon">🧬</span>
+          <div class="card-label">Cancer family history</div>
+          <div class="card-sub">Breast, cervical, ovarian</div>
+        </div>
+        <div class="sel-card" data-val="osteoporosis" onclick="toggleCard(this,'conditions')">
+          <span class="card-icon">🦴</span>
+          <div class="card-label">Osteoporosis risk</div>
+          <div class="card-sub">Bone density concern</div>
+        </div>
+        <div class="sel-card" data-val="none" onclick="toggleCard(this,'conditions')">
+          <span class="card-icon">✓</span>
+          <div class="card-label">None diagnosed</div>
+          <div class="card-sub">No current conditions</div>
+        </div>
+      </div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="goTo(1)">Back</button>
+        <button class="btn-next" onclick="goTo(3)">Continue</button>
+        <span class="skip-link" onclick="goTo(3)">Skip</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 3: Symptoms ── -->
+  <div class="screen" id="screen-3">
+    <div class="q-screen">
+      <div class="q-label">Step 3 of 7 — Current symptoms</div>
+      <h2 class="q-title">What are you experiencing?</h2>
+      <p class="q-sub">Select anything you've noticed in the past 3 months, even if mild.</p>
+      <div class="chip-grid">
+        <div class="chip" data-group="symptoms" data-val="fatigue" onclick="selectMultiChip(this,'symptoms')">Fatigue / low energy</div>
+        <div class="chip" data-group="symptoms" data-val="irregular_cycle" onclick="selectMultiChip(this,'symptoms')">Irregular periods</div>
+        <div class="chip" data-group="symptoms" data-val="weight_gain" onclick="selectMultiChip(this,'symptoms')">Unexplained weight gain</div>
+        <div class="chip" data-group="symptoms" data-val="hair_loss" onclick="selectMultiChip(this,'symptoms')">Hair thinning / loss</div>
+        <div class="chip" data-group="symptoms" data-val="hot_flashes" onclick="selectMultiChip(this,'symptoms')">Hot flashes</div>
+        <div class="chip" data-group="symptoms" data-val="mood" onclick="selectMultiChip(this,'symptoms')">Mood changes / anxiety</div>
+        <div class="chip" data-group="symptoms" data-val="sleep" onclick="selectMultiChip(this,'symptoms')">Poor sleep</div>
+        <div class="chip" data-group="symptoms" data-val="brain_fog" onclick="selectMultiChip(this,'symptoms')">Brain fog</div>
+        <div class="chip" data-group="symptoms" data-val="joint_pain" onclick="selectMultiChip(this,'symptoms')">Joint pain / stiffness</div>
+        <div class="chip" data-group="symptoms" data-val="bloating" onclick="selectMultiChip(this,'symptoms')">Bloating / digestion</div>
+        <div class="chip" data-group="symptoms" data-val="skin" onclick="selectMultiChip(this,'symptoms')">Skin changes / acne</div>
+        <div class="chip" data-group="symptoms" data-val="none" onclick="selectMultiChip(this,'symptoms')">No current symptoms</div>
+      </div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="goTo(2)">Back</button>
+        <button class="btn-next" onclick="goTo(4)">Continue</button>
+        <span class="skip-link" onclick="goTo(4)">Skip</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 4: Lifestyle ── -->
+  <div class="screen" id="screen-4">
+    <div class="q-screen">
+      <div class="q-label">Step 4 of 7 — Lifestyle</div>
+      <h2 class="q-title">Tell us about your daily habits.</h2>
+      <p class="q-sub">Lifestyle is the most modifiable risk factor — be honest for the most useful results.</p>
+
+      <div class="q-label">Exercise frequency</div>
+      <div class="chip-grid" style="margin-bottom:28px">
+        <div class="chip" data-group="exercise" data-val="none" onclick="selectChip(this,'exercise')">Sedentary</div>
+        <div class="chip" data-group="exercise" data-val="light" onclick="selectChip(this,'exercise')">1–2 days / week</div>
+        <div class="chip" data-group="exercise" data-val="moderate" onclick="selectChip(this,'exercise')">3–4 days / week</div>
+        <div class="chip" data-group="exercise" data-val="active" onclick="selectChip(this,'exercise')">5+ days / week</div>
+      </div>
+
+      <div class="q-label">Diet quality</div>
+      <div class="chip-grid" style="margin-bottom:28px">
+        <div class="chip" data-group="diet" data-val="poor" onclick="selectChip(this,'diet')">Mostly processed foods</div>
+        <div class="chip" data-group="diet" data-val="average" onclick="selectChip(this,'diet')">Mixed — home + outside</div>
+        <div class="chip" data-group="diet" data-val="good" onclick="selectChip(this,'diet')">Mostly home-cooked</div>
+        <div class="chip" data-group="diet" data-val="excellent" onclick="selectChip(this,'diet')">Clean, whole foods</div>
+      </div>
+
+      <div class="q-label">Sleep quality</div>
+      <div class="chip-grid" style="margin-bottom:28px">
+        <div class="chip" data-group="sleep" data-val="poor" onclick="selectChip(this,'sleep')">Under 5 hrs / disrupted</div>
+        <div class="chip" data-group="sleep" data-val="fair" onclick="selectChip(this,'sleep')">5–6 hrs, often tired</div>
+        <div class="chip" data-group="sleep" data-val="good" onclick="selectChip(this,'sleep')">7–8 hrs, mostly rested</div>
+        <div class="chip" data-group="sleep" data-val="excellent" onclick="selectChip(this,'sleep')">8+ hrs, fully rested</div>
+      </div>
+
+      <div class="q-label">Stress level (1 = low, 5 = high)</div>
+      <div class="scale-row" id="stress-scale">
+        <button class="scale-btn" data-val="1" onclick="selectScale(this,'stress',1)">1</button>
+        <button class="scale-btn" data-val="2" onclick="selectScale(this,'stress',2)">2</button>
+        <button class="scale-btn" data-val="3" onclick="selectScale(this,'stress',3)">3</button>
+        <button class="scale-btn" data-val="4" onclick="selectScale(this,'stress',4)">4</button>
+        <button class="scale-btn" data-val="5" onclick="selectScale(this,'stress',5)">5</button>
+      </div>
+      <div class="scale-labels" style="margin-bottom:28px"><span>Rarely stressed</span><span>Chronically stressed</span></div>
+
+      <div class="nav-row">
+        <button class="btn-back" onclick="goTo(3)">Back</button>
+        <button class="btn-next" id="next-4" onclick="goTo(5)" disabled>Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 5: Behaviours ── -->
+  <div class="screen" id="screen-5">
+    <div class="q-screen">
+      <div class="q-label">Step 5 of 7 — Health behaviours</div>
+      <h2 class="q-title">A few more details.</h2>
+      <p class="q-sub">These help calibrate your screening priorities and risk weights.</p>
+
+      <div class="q-label">Smoking status</div>
+      <div class="chip-grid" style="margin-bottom:28px">
+        <div class="chip" data-group="smoking" data-val="never" onclick="selectChip(this,'smoking')">Never smoked</div>
+        <div class="chip" data-group="smoking" data-val="former" onclick="selectChip(this,'smoking')">Former smoker</div>
+        <div class="chip" data-group="smoking" data-val="current" onclick="selectChip(this,'smoking')">Current smoker</div>
+      </div>
+
+      <div class="q-label">Alcohol consumption</div>
+      <div class="chip-grid" style="margin-bottom:28px">
+        <div class="chip" data-group="alcohol" data-val="none" onclick="selectChip(this,'alcohol')">None</div>
+        <div class="chip" data-group="alcohol" data-val="occasional" onclick="selectChip(this,'alcohol')">Occasional (social)</div>
+        <div class="chip" data-group="alcohol" data-val="moderate" onclick="selectChip(this,'alcohol')">Moderate (weekly)</div>
+        <div class="chip" data-group="alcohol" data-val="heavy" onclick="selectChip(this,'alcohol')">Heavy (daily)</div>
+      </div>
+
+      <div class="q-label">Last health check-up</div>
+      <div class="chip-grid" style="margin-bottom:28px">
+        <div class="chip" data-group="lastcheck" data-val="within1y" onclick="selectChip(this,'lastcheck')">Within last year</div>
+        <div class="chip" data-group="lastcheck" data-val="1to3y" onclick="selectChip(this,'lastcheck')">1–3 years ago</div>
+        <div class="chip" data-group="lastcheck" data-val="3yplus" onclick="selectChip(this,'lastcheck')">3+ years ago</div>
+        <div class="chip" data-group="lastcheck" data-val="never" onclick="selectChip(this,'lastcheck')">Never had one</div>
+      </div>
+
+      <div class="q-label">Pregnancy / maternity history</div>
+      <div class="chip-grid">
+        <div class="chip" data-group="pregnancy" data-val="none" onclick="selectChip(this,'pregnancy')">No pregnancies</div>
+        <div class="chip" data-group="pregnancy" data-val="current" onclick="selectChip(this,'pregnancy')">Currently pregnant</div>
+        <div class="chip" data-group="pregnancy" data-val="past" onclick="selectChip(this,'pregnancy')">Past pregnancy</div>
+        <div class="chip" data-group="pregnancy" data-val="gdm" onclick="selectChip(this,'pregnancy')">Had gestational diabetes</div>
+        <div class="chip" data-group="pregnancy" data-val="prefer_not" onclick="selectChip(this,'pregnancy')">Prefer not to say</div>
+      </div>
+
+      <div class="nav-row" style="margin-top:36px">
+        <button class="btn-back" onclick="goTo(4)">Back</button>
+        <button class="btn-next" id="next-5" onclick="goTo(6)" disabled>Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 6: Goals ── -->
+  <div class="screen" id="screen-6">
+    <div class="q-screen">
+      <div class="q-label">Step 6 of 7 — Your goals</div>
+      <h2 class="q-title">What matters most to you?</h2>
+      <p class="q-sub">This shapes the priorities in your preventive workflow.</p>
+      <div class="card-grid">
+        <div class="sel-card" data-val="detect_early" onclick="toggleCard(this,'goals')">
+          <span class="card-icon">🔍</span>
+          <div class="card-label">Catch risks early</div>
+          <div class="card-sub">Screening-focused</div>
+        </div>
+        <div class="sel-card" data-val="energy" onclick="toggleCard(this,'goals')">
+          <span class="card-icon">⚡</span>
+          <div class="card-label">Boost energy</div>
+          <div class="card-sub">Fatigue &amp; vitality</div>
+        </div>
+        <div class="sel-card" data-val="hormones" onclick="toggleCard(this,'goals')">
+          <span class="card-icon">🌊</span>
+          <div class="card-label">Balance hormones</div>
+          <div class="card-sub">Cycle &amp; menopause</div>
+        </div>
+        <div class="sel-card" data-val="metabolic" onclick="toggleCard(this,'goals')">
+          <span class="card-icon">🔥</span>
+          <div class="card-label">Metabolic health</div>
+          <div class="card-sub">Weight, glucose, lipids</div>
+        </div>
+        <div class="sel-card" data-val="mental" onclick="toggleCard(this,'goals')">
+          <span class="card-icon">🧠</span>
+          <div class="card-label">Mental wellbeing</div>
+          <div class="card-sub">Stress &amp; mood</div>
+        </div>
+        <div class="sel-card" data-val="longevity" onclick="toggleCard(this,'goals')">
+          <span class="card-icon">🌿</span>
+          <div class="card-label">Healthy ageing</div>
+          <div class="card-sub">Bone, heart, brain</div>
+        </div>
+      </div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="goTo(5)">Back</button>
+        <button class="btn-next" id="next-6" onclick="goTo(7)" disabled>Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SCREEN 7: Final question ── -->
+  <div class="screen" id="screen-7">
+    <div class="q-screen">
+      <div class="q-label">Step 7 of 7 — Last question</div>
+      <h2 class="q-title">Anything else to tell us?</h2>
+      <p class="q-sub">Optional — mention any specific concerns, medications, or context that might be relevant.</p>
+      <textarea class="text-input" id="free-text" rows="4" placeholder="e.g. I've been on levothyroxine for 2 years, recently started experiencing more fatigue despite stable TSH levels..."
+        oninput="state.freeText=this.value" style="resize:vertical;"></textarea>
+      <div class="q-label" style="margin-top:16px">How engaged are you with tracking your health?</div>
+      <div class="scale-row" id="engagement-scale">
+        <button class="scale-btn" data-val="1" onclick="selectScale(this,'engagement',1)">1</button>
+        <button class="scale-btn" data-val="2" onclick="selectScale(this,'engagement',2)">2</button>
+        <button class="scale-btn" data-val="3" onclick="selectScale(this,'engagement',3)">3</button>
+        <button class="scale-btn" data-val="4" onclick="selectScale(this,'engagement',4)">4</button>
+        <button class="scale-btn" data-val="5" onclick="selectScale(this,'engagement',5)">5</button>
+      </div>
+      <div class="scale-labels"><span>Just starting</span><span>Highly engaged</span></div>
+      <div class="nav-row" style="margin-top:36px">
+        <button class="btn-back" onclick="goTo(6)">Back</button>
+        <button class="btn-next" onclick="generateResults()">Generate my plan →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LOADING ── -->
+  <div class="screen" id="screen-loading">
+    <div class="spinner"></div>
+    <div class="loading-title">Building your health plan</div>
+    <div class="loading-sub">Analysing your profile across 6 risk dimensions…</div>
+    <div class="loading-steps">
+      <div class="loading-step" id="ls-1"><div class="loading-step-dot"></div>Mapping condition risk profile</div>
+      <div class="loading-step" id="ls-2"><div class="loading-step-dot"></div>Scoring biomarker priorities</div>
+      <div class="loading-step" id="ls-3"><div class="loading-step-dot"></div>Calibrating lifestyle impact</div>
+      <div class="loading-step" id="ls-4"><div class="loading-step-dot"></div>Generating preventive workflow</div>
+      <div class="loading-step" id="ls-5"><div class="loading-step-dot"></div>Ranking interventions by impact</div>
+    </div>
+  </div>
+
+  <!-- ── RESULTS ── -->
+  <div class="screen" id="screen-results">
+    <!-- Injected by JS -->
+  </div>
+
+</div><!-- /app -->
+
+<script>
+// ── STATE ──
+const state = {
+  age: 32,
+  meno: null,
+  conditions: [],
+  symptoms: [],
+  exercise: null,
+  diet: null,
+  sleep: null,
+  stress: null,
+  smoking: null,
+  alcohol: null,
+  lastcheck: null,
+  pregnancy: null,
+  goals: [],
+  freeText: '',
+  engagement: null,
+  currentScreen: 0
+};
+
+const TOTAL_STEPS = 7;
+
+// ── NAVIGATION ──
+function goTo(n) {
+  document.getElementById('screen-' + state.currentScreen).classList.remove('active');
+  document.getElementById('screen-' + n).classList.add('active');
+  state.currentScreen = n;
+  updateProgress();
+  window.scrollTo(0, 0);
+}
+
+function startAssessment() {
+  goTo(1);
+}
+
+function updateProgress() {
+  const s = state.currentScreen;
+  const pct = s === 0 ? 0 : Math.round((s / TOTAL_STEPS) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  if (s > 0 && s <= TOTAL_STEPS) {
+    document.getElementById('step-count').textContent = s + ' / ' + TOTAL_STEPS;
+  } else {
+    document.getElementById('step-count').textContent = '';
+  }
+}
+
+// ── CHIP LOGIC ──
+function selectChip(el, group) {
+  document.querySelectorAll('.chip[data-group="' + group + '"]').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state[group] = el.dataset.val;
+  validateScreen(state.currentScreen);
+}
+
+function selectMultiChip(el, group) {
+  el.classList.toggle('selected');
+  state[group] = Array.from(document.querySelectorAll('.chip[data-group="' + group + '"].selected')).map(c => c.dataset.val);
+}
+
+function toggleCard(el, group) {
+  el.classList.toggle('selected');
+  state[group] = Array.from(document.querySelectorAll('#' + (group === 'conditions' ? 'conditions-grid' : 'screen-6 .card-grid') + ' .sel-card.selected')).map(c => c.dataset.val);
+  validateScreen(state.currentScreen);
+}
+
+function selectScale(el, group, val) {
+  el.closest('.scale-row').querySelectorAll('.scale-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  state[group] = val;
+  validateScreen(state.currentScreen);
+}
+
+// ── VALIDATION ──
+function validateScreen(n) {
+  if (n === 1) {
+    const ok = state.meno !== null;
+    document.getElementById('next-1').disabled = !ok;
+  }
+  if (n === 4) {
+    const ok = state.exercise && state.diet && state.sleep && state.stress;
+    document.getElementById('next-4').disabled = !ok;
+  }
+  if (n === 5) {
+    const ok = state.smoking && state.alcohol && state.lastcheck && state.pregnancy;
+    document.getElementById('next-5').disabled = !ok;
+  }
+  if (n === 6) {
+    const ok = state.goals.length > 0;
+    document.getElementById('next-6').disabled = !ok;
+  }
+}
+
+// ── RISK ENGINE ──
+function computeRisk() {
+  let hormonal = 0, metabolic = 0, cardiovascular = 0, bone = 0, cancer = 0, mental = 0;
+  const age = state.age;
+
+  // Age adjustments
+  if (age >= 45) { hormonal += 25; bone += 20; cardiovascular += 15; }
+  else if (age >= 35) { hormonal += 10; metabolic += 10; }
+  if (age >= 50) { cancer += 20; cardiovascular += 20; }
+
+  // Menopause
+  if (state.meno === 'peri') { hormonal += 30; bone += 15; mental += 10; }
+  if (state.meno === 'post') { hormonal += 20; bone += 35; cardiovascular += 25; }
+
+  // Conditions
+  if (state.conditions.includes('pcos')) { hormonal += 30; metabolic += 25; }
+  if (state.conditions.includes('thyroid')) { hormonal += 25; mental += 15; }
+  if (state.conditions.includes('diabetes')) { metabolic += 40; cardiovascular += 20; }
+  if (state.conditions.includes('anaemia')) { metabolic += 15; mental += 10; }
+  if (state.conditions.includes('hypertension')) { cardiovascular += 35; }
+  if (state.conditions.includes('cancer_fh')) { cancer += 35; }
+  if (state.conditions.includes('osteoporosis')) { bone += 40; }
+
+  // Symptoms
+  if (state.symptoms.includes('irregular_cycle')) { hormonal += 20; }
+  if (state.symptoms.includes('hot_flashes')) { hormonal += 20; }
+  if (state.symptoms.includes('fatigue')) { metabolic += 10; mental += 10; }
+  if (state.symptoms.includes('weight_gain')) { metabolic += 15; }
+  if (state.symptoms.includes('joint_pain')) { bone += 15; }
+  if (state.symptoms.includes('mood')) { mental += 20; }
+  if (state.symptoms.includes('sleep')) { mental += 15; cardiovascular += 5; }
+
+  // Lifestyle
+  if (state.exercise === 'none') { metabolic += 20; cardiovascular += 20; bone += 10; mental += 10; }
+  if (state.exercise === 'light') { metabolic += 10; cardiovascular += 10; }
+  if (state.diet === 'poor') { metabolic += 25; cardiovascular += 15; }
+  if (state.diet === 'average') { metabolic += 10; }
+  if (state.sleep === 'poor') { metabolic += 15; mental += 25; cardiovascular += 10; }
+  if (state.sleep === 'fair') { mental += 10; }
+  if (state.stress >= 4) { hormonal += 15; mental += 30; cardiovascular += 10; }
+  else if (state.stress >= 3) { mental += 15; }
+
+  // Behaviours
+  if (state.smoking === 'current') { cardiovascular += 30; cancer += 20; bone += 10; }
+  if (state.smoking === 'former') { cardiovascular += 10; cancer += 10; }
+  if (state.alcohol === 'heavy') { metabolic += 15; cancer += 15; }
+  if (state.alcohol === 'moderate') { cancer += 5; }
+  if (state.lastcheck === '3yplus' || state.lastcheck === 'never') { cancer += 15; }
+  if (state.pregnancy === 'gdm') { metabolic += 25; }
+
+  const cap = v => Math.min(v, 95);
+  return {
+    hormonal:      cap(hormonal),
+    metabolic:     cap(metabolic),
+    cardiovascular:cap(cardiovascular),
+    bone:          cap(bone),
+    cancer:        cap(cancer),
+    mental:        cap(mental)
+  };
+}
+
+function riskLabel(v) {
+  if (v >= 60) return { label: 'High', cls: 'tag-high' };
+  if (v >= 30) return { label: 'Moderate', cls: 'tag-mod' };
+  return { label: 'Low', cls: 'tag-low' };
+}
+
+function riskColor(v) {
+  if (v >= 60) return 'var(--rose)';
+  if (v >= 30) return 'var(--amber)';
+  return 'var(--sage)';
+}
+
+// ── WORKFLOW GENERATOR ──
+function buildWorkflow(risk) {
+  const items = [];
+
+  // Always add baseline
+  items.push({
+    title: 'Complete baseline blood panel',
+    badge: 'Now', badgeCls: 'badge-now', priority: 'high',
+    desc: 'Establish your reference values for all key biomarkers before any risk modelling can be personalised. Include CBC, metabolic panel, lipids, and thyroid.',
+    biomarkers: ['CBC', 'HbA1c', 'Fasting glucose', 'Lipid panel', 'TSH', 'Vitamin D', 'Ferritin', 'CRP'],
+  });
+
+  // Hormonal
+  if (risk.hormonal >= 25) {
+    items.push({
+      title: 'Comprehensive hormonal panel',
+      badge: risk.hormonal >= 55 ? 'Now' : '3 months', badgeCls: risk.hormonal >= 55 ? 'badge-now' : 'badge-3m',
+      priority: risk.hormonal >= 55 ? 'high' : 'med',
+      desc: 'Your hormonal risk profile warrants a detailed assessment of sex hormones, thyroid function, and adrenal markers. Best drawn on day 3 of your cycle (if applicable).',
+      biomarkers: ['Oestradiol', 'FSH', 'LH', 'Progesterone', 'Testosterone (free)', 'DHEA-S', 'TSH', 'fT3', 'fT4', 'AMH'],
+    });
+  }
+
+  if (state.meno === 'peri' || state.meno === 'post') {
+    items.push({
+      title: 'Bone density screening (DXA scan)',
+      badge: state.meno === 'post' ? 'Now' : '6 months', badgeCls: state.meno === 'post' ? 'badge-now' : 'badge-6m',
+      priority: state.meno === 'post' ? 'high' : 'med',
+      desc: 'Oestrogen decline accelerates bone resorption. A DXA scan establishes your T-score baseline. Combine with Vitamin D and calcium assessment.',
+      biomarkers: ['DXA T-score', 'Vitamin D (25-OH)', 'Calcium', 'PTH', 'CTX (bone resorption)'],
+    });
+  }
+
+  // Metabolic
+  if (risk.metabolic >= 25) {
+    items.push({
+      title: 'Insulin resistance & metabolic deep dive',
+      badge: risk.metabolic >= 55 ? 'Now' : '3 months', badgeCls: risk.metabolic >= 55 ? 'badge-now' : 'badge-3m',
+      priority: risk.metabolic >= 55 ? 'high' : 'med',
+      desc: 'Fasting glucose alone misses 70% of insulin resistance. Add fasting insulin and HOMA-IR calculation to detect prediabetes years before HbA1c changes.',
+      biomarkers: ['Fasting insulin', 'HOMA-IR', 'HbA1c', 'Triglycerides', 'HDL cholesterol', 'Uric acid'],
+    });
+  }
+
+  if (state.pregnancy === 'gdm') {
+    items.push({
+      title: 'Post-GDM metabolic surveillance',
+      badge: 'Now', badgeCls: 'badge-now', priority: 'high',
+      desc: 'Women with gestational diabetes have a 7× higher lifetime risk of T2D. Annual OGTT and HbA1c monitoring is essential — not optional.',
+      biomarkers: ['OGTT (75g)', 'HbA1c', 'Fasting insulin', 'Lipid panel', 'HOMA-IR'],
+    });
+  }
+
+  // Cardiovascular
+  if (risk.cardiovascular >= 25) {
+    items.push({
+      title: 'Cardiovascular risk assessment',
+      badge: risk.cardiovascular >= 55 ? 'Now' : '6 months', badgeCls: risk.cardiovascular >= 55 ? 'badge-now' : 'badge-6m',
+      priority: risk.cardiovascular >= 55 ? 'high' : 'med',
+      desc: 'Women\'s CVD risk is systematically underestimated. Go beyond standard lipids — Lp(a) and hs-CRP are the most predictive markers for women specifically.',
+      biomarkers: ['Lp(a)', 'hs-CRP', 'ApoB / ApoA1', 'Homocysteine', 'Blood pressure (serial)', 'ECG (resting)'],
+    });
+  }
+
+  // Cancer screening
+  if (risk.cancer >= 20 || state.age >= 30) {
+    items.push({
+      title: 'Cervical and breast cancer screening',
+      badge: state.conditions.includes('cancer_fh') ? 'Now' : 'Annual',
+      badgeCls: state.conditions.includes('cancer_fh') ? 'badge-now' : 'badge-ann',
+      priority: state.conditions.includes('cancer_fh') ? 'high' : 'med',
+      desc: 'Pap smear every 3 years (or co-test with HPV every 5 years). Mammogram annually from age 40 (earlier with family history). Clinical breast exam annually.',
+      biomarkers: ['Pap smear / HPV co-test', 'Clinical breast exam', 'Mammogram (40+)', 'CA-125 (family history)'],
+    });
+  }
+
+  // Mental health
+  if (risk.mental >= 25) {
+    items.push({
+      title: 'Mood, sleep & stress intervention programme',
+      badge: '3 months', badgeCls: 'badge-3m', priority: risk.mental >= 55 ? 'high' : 'med',
+      desc: 'Chronic stress elevates cortisol, disrupts hormonal balance, and accelerates metabolic risk. A structured CBT or mindfulness programme has stronger evidence than most supplements.',
+      biomarkers: ['Cortisol (AM/PM)', 'DHEA-S', 'Magnesium', 'PHQ-9 score (screening)', 'Sleep diary / wearable HRV'],
+    });
+  }
+
+  // Nutrition
+  items.push({
+    title: 'Micronutrient & deficiency screen',
+    badge: '3 months', badgeCls: 'badge-3m', priority: 'low',
+    desc: 'Vitamin D deficiency affects 70–80% of urban Indian women. Iron deficiency is the most common global nutritional disorder in reproductive-age women.',
+    biomarkers: ['Vitamin D (25-OH)', 'Ferritin', 'Vitamin B12', 'Folate', 'Zinc', 'Magnesium'],
+  });
+
+  // Annual
+  items.push({
+    title: 'Annual preventive health review',
+    badge: 'Annual', badgeCls: 'badge-ann', priority: 'low',
+    desc: 'Repeat core biomarkers, update risk scores, and revise interventions. The value of longitudinal tracking compounds — your 3rd year of data is more valuable than the first.',
+    biomarkers: ['Repeat full panel', 'Update BMI & body composition', 'Blood pressure', 'Review medications'],
+  });
+
+  // Lifestyle
+  if (state.exercise === 'none' || state.exercise === 'light') {
+    items.push({
+      title: 'Structured exercise programme',
+      badge: 'Lifestyle', badgeCls: 'badge-life', priority: risk.metabolic >= 40 || risk.cardiovascular >= 40 ? 'high' : 'med',
+      desc: '150 minutes of moderate aerobic exercise per week reduces all-cause mortality by 33%. Add 2 sessions of resistance training for bone density and metabolic health.',
+      biomarkers: ['Track resting HR', 'HRV baseline', 'VO2 max estimate'],
+    });
+  }
+
+  if (state.diet === 'poor' || state.diet === 'average') {
+    items.push({
+      title: 'Dietary intervention — anti-inflammatory focus',
+      badge: 'Lifestyle', badgeCls: 'badge-life', priority: 'med',
+      desc: 'Reduce refined carbohydrates and ultra-processed foods. Increase omega-3s, fibre, and phytoestrogens. An Indian DASH-style diet is the highest-evidence approach for metabolic and cardiovascular risk.',
+      biomarkers: ['Track dietary pattern', 'Monitor CRP', 'HbA1c trend', 'Lipid panel response'],
+    });
+  }
+
+  return items;
+}
+
+function buildBiomarkers(risk) {
+  const out = [];
+  out.push({ name: 'TSH (thyroid)', reason: 'Thyroid dysfunction is present in ~12% of women and commonly undiagnosed', freq: 'Annually' });
+  out.push({ name: 'Vitamin D (25-OH)', reason: 'Deficient in ~75% of urban Indian women; affects bone, immunity, mood', freq: 'Every 6 months' });
+  out.push({ name: 'Ferritin', reason: 'Most sensitive marker for iron stores; serum iron alone misses 40% of deficiency', freq: 'Annually' });
+  out.push({ name: 'HbA1c', reason: 'Reflects average glucose over 3 months; detects prediabetes before symptoms', freq: 'Annually' });
+  if (risk.hormonal >= 25) out.push({ name: 'Oestradiol (E2)', reason: 'Primary marker for ovarian function and hormonal balance', freq: 'Cycle day 3' });
+  if (risk.hormonal >= 25) out.push({ name: 'AMH', reason: 'Anti-Müllerian hormone — ovarian reserve, useful in reproductive years', freq: 'Once baseline, then as needed' });
+  if (risk.cardiovascular >= 25) out.push({ name: 'Lp(a)', reason: 'Genetically elevated in 20% of population; strong independent CVD risk in women', freq: 'Once lifetime' });
+  if (risk.cardiovascular >= 25) out.push({ name: 'hs-CRP', reason: 'Inflammatory marker more predictive of cardiac events in women than men', freq: 'Annually' });
+  if (risk.metabolic >= 25) out.push({ name: 'Fasting insulin + HOMA-IR', reason: 'Detects insulin resistance 10–15 years before T2D diagnosis', freq: 'Annually' });
+  if (state.meno === 'peri' || state.meno === 'post') out.push({ name: 'PTH + Calcium', reason: 'Parathyroid hormone regulates bone metabolism; critical post-menopause', freq: 'Annually' });
+  out.push({ name: 'Vitamin B12', reason: 'Deficiency common in vegetarian/vegan diets; neurological and fatigue implications', freq: 'Annually' });
+  out.push({ name: 'CBC (full blood count)', reason: 'Baseline health indicator — detects anaemia, infection, immune status', freq: 'Annually' });
+  return out;
+}
+
+function buildLifestyle(risk) {
+  const out = [];
+  if (state.stress >= 3 || risk.mental >= 30) {
+    out.push({ icon: '🧘', title: 'Stress management protocol', desc: 'Daily 10-minute mindfulness or breathwork. Evidence-based: lowers cortisol, improves HRV, reduces inflammatory markers within 8 weeks.' });
+  }
+  if (state.sleep === 'poor' || state.sleep === 'fair') {
+    out.push({ icon: '😴', title: 'Sleep hygiene optimisation', desc: 'Consistent sleep/wake schedule, limit blue light 2 hours before bed, keep bedroom under 19°C. Poor sleep raises cortisol and insulin resistance independently.' });
+  }
+  if (state.exercise === 'none' || state.exercise === 'light') {
+    out.push({ icon: '🏃', title: 'Progressive exercise plan', desc: 'Start with 30-minute walks 5× per week. Add resistance training 2× per week from week 4. Target: 7,000 steps daily as minimum threshold.' });
+  }
+  if (state.diet !== 'excellent') {
+    out.push({ icon: '🥗', title: 'Anti-inflammatory diet approach', desc: 'Prioritise whole grains, legumes, seasonal vegetables, omega-3 rich foods. Limit sugar, refined flour, and ultra-processed foods. Aim for 30 different plant foods per week.' });
+  }
+  out.push({ icon: '💧', title: 'Hydration & gut health', desc: 'Adequate hydration (2–2.5L/day) supports hormonal metabolism and toxin clearance. Add a daily fermented food for microbiome diversity.' });
+  if (risk.hormonal >= 30) {
+    out.push({ icon: '🌙', title: 'Hormone-supportive habits', desc: 'Reduce alcohol and processed soy. Prioritise cruciferous vegetables for oestrogen metabolism. Consider seed cycling if in reproductive years.' });
+  }
+  if (state.smoking === 'current') {
+    out.push({ icon: '🚭', title: 'Smoking cessation — urgent priority', desc: 'Smoking is the single largest modifiable risk factor for cardiovascular disease and cancer. Every year of cessation reduces risk by 20%. Seek structured cessation support.' });
+  }
+  out.push({ icon: '📱', title: 'Health tracking baseline', desc: 'Log symptoms, cycle, energy, and sleep for 90 days before your first review. This pattern data is more valuable to your clinician than a single blood test.' });
+  return out;
+}
+
+// ── GENERATE RESULTS ──
+function generateResults() {
+  goTo('loading');
+  const steps = ['ls-1','ls-2','ls-3','ls-4','ls-5'];
+  steps.forEach((id, i) => {
+    setTimeout(() => document.getElementById(id).classList.add('show'), i * 600 + 300);
+  });
+
+  setTimeout(() => {
+    const risk = computeRisk();
+    const workflow = buildWorkflow(risk);
+    const biomarkers = buildBiomarkers(risk);
+    const lifestyle = buildLifestyle(risk);
+    const name = state.freeText ? 'your' : 'your';
+
+    const topRisk = Object.entries(risk).sort((a,b) => b[1]-a[1])[0];
+
+    const scoreHTML = [
+      { label: 'Hormonal', key: 'hormonal', color: '#993556' },
+      { label: 'Metabolic', key: 'metabolic', color: '#C4893A' },
+      { label: 'Cardiovascular', key: 'cardiovascular', color: '#C4614A' },
+      { label: 'Bone health', key: 'bone', color: '#3D5A8A' },
+      { label: 'Cancer screen', key: 'cancer', color: '#4A7C59' },
+      { label: 'Mental health', key: 'mental', color: '#2E7D7A' },
+    ].map(s => {
+      const v = risk[s.key];
+      const rl = riskLabel(v);
+      return `<div class="score-card">
+        <div class="sc-label">${s.label}</div>
+        <div class="sc-val" style="color:${riskColor(v)}">${v}</div>
+        <span class="sc-tag ${rl.cls}">${rl.label}</span>
+      </div>`;
+    }).join('');
+
+    const wfHTML = workflow.map(w => `
+      <div class="wf-item priority-${w.priority}" onclick="">
+        <div class="wf-top">
+          <div class="wf-title">${w.title}</div>
+          <span class="wf-badge ${w.badgeCls}">${w.badge}</span>
+        </div>
+        <div class="wf-desc">${w.desc}</div>
+        <div class="wf-biomarkers">${w.biomarkers.map(b => `<span class="bm-chip">${b}</span>`).join('')}</div>
+      </div>`).join('');
+
+    const bmHTML = `<div class="bm-grid">${biomarkers.map(b => `
+      <div class="bm-card">
+        <div class="bm-card-name">${b.name}</div>
+        <div class="bm-card-reason">${b.reason}</div>
+        <div class="bm-freq">📅 ${b.freq}</div>
+      </div>`).join('')}</div>`;
+
+    const lsHTML = `<div class="lifestyle-grid">${lifestyle.map(l => `
+      <div class="ls-card">
+        <div class="ls-icon">${l.icon}</div>
+        <div class="ls-title">${l.title}</div>
+        <div class="ls-desc">${l.desc}</div>
+      </div>`).join('')}</div>`;
+
+    const highCount = Object.values(risk).filter(v => v >= 60).length;
+    const modCount  = Object.values(risk).filter(v => v >= 30 && v < 60).length;
+
+    const resultsEl = document.getElementById('screen-results');
+    resultsEl.innerHTML = `
+      <div class="results-header">
+        <div class="results-tag">
+          <span>✓</span> Assessment complete
+        </div>
+        <h1 class="results-title">Your preventive health<br>workflow is ready.</h1>
+        <p class="results-sub">Based on your profile — age ${state.age}, ${state.meno || 'pre'}-menopausal — we identified
+          ${highCount > 0 ? `<strong>${highCount} high-priority</strong> and ` : ''}${modCount} moderate-risk area${modCount !== 1 ? 's' : ''} to address.</p>
+      </div>
+
+      <div class="section-title" style="margin-top:0">Risk scores</div>
+      <p class="section-sub">Scores reflect relative risk based on your profile. 0 = minimal risk, 100 = maximum.</p>
+      <div class="score-grid">${scoreHTML}</div>
+
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="switchTab(this,'tab-workflow')">Preventive workflow</button>
+        <button class="tab-btn" onclick="switchTab(this,'tab-biomarkers')">Biomarker panel</button>
+        <button class="tab-btn" onclick="switchTab(this,'tab-lifestyle')">Lifestyle plan</button>
+      </div>
+
+      <div class="tab-pane active" id="tab-workflow">
+        <p class="section-sub" style="margin-bottom:20px">Ordered by clinical priority. Timelines are recommendations — discuss with your healthcare provider.</p>
+        <div class="workflow-timeline">${wfHTML}</div>
+      </div>
+      <div class="tab-pane" id="tab-biomarkers">${bmHTML}</div>
+      <div class="tab-pane" id="tab-lifestyle">${lsHTML}</div>
+
+      <div class="results-cta">
+        <div class="cta-text">
+          <div class="cta-title">Ready to start your plan?</div>
+          <div class="cta-sub">Book a preventive health consult to review these results with a women's health specialist.</div>
+        </div>
+        <button class="btn-cta">Book a consult →</button>
+      </div>
+
+      <div style="margin-top:12px">
+        <span class="restart-link" onclick="restartApp()">← Start a new assessment</span>
+      </div>
+      <p style="font-size:12px;color:var(--charcoal-60);margin-top:20px;line-height:1.6;">
+        This tool provides informational guidance only and does not constitute medical advice. All recommendations should be reviewed with a qualified healthcare provider before acting.
+      </p>
+    `;
+
+    document.getElementById('screen-loading').classList.remove('active');
+    resultsEl.classList.add('active');
+    state.currentScreen = 'results';
+    document.getElementById('progress-fill').style.width = '100%';
+    document.getElementById('step-count').textContent = 'Complete';
+    window.scrollTo(0, 0);
+  }, steps.length * 600 + 800);
+}
+
+function switchTab(btn, paneId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(paneId).classList.add('active');
+}
+
+function restartApp() {
+  Object.assign(state, {
+    age:32, meno:null, conditions:[], symptoms:[], exercise:null,
+    diet:null, sleep:null, stress:null, smoking:null, alcohol:null,
+    lastcheck:null, pregnancy:null, goals:[], freeText:'', engagement:null, currentScreen:0
+  });
+  document.querySelectorAll('.chip.selected').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.sel-card.selected').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.scale-btn.selected').forEach(c => c.classList.remove('selected'));
+  document.getElementById('free-text').value = '';
+  document.getElementById('screen-results').classList.remove('active');
+  document.getElementById('screen-0').classList.add('active');
+  state.currentScreen = 0;
+  updateProgress();
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
